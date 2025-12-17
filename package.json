@@ -1,0 +1,136 @@
+{
+  "name": "template-server",
+  "version": "0.0.1",
+  "description": "nestjs starter",
+  "author": "kim",
+  "homepage": "https://github.com/kim-xie/template-server",
+  "private": false,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "cross-env NODE_ENV=development nest start --watch",
+    "start:debug": "npm run db:generate && nest start --debug --watch",
+    "start:prod": "cross-env NODE_ENV=production node dist/main",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "db:deploy": "prisma migrate deploy",
+    "db:setup": "prisma migrate dev && prisma db seed",
+    "commitlint": "commitlint --config commitlint.config.js -e -V",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint:staged": "npx lint-staged",
+    "lint:ls-lint": "ls-lint",
+    "postinstall": "husky install",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/common": "^11.1.9",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.9",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/platform-express": "^11.1.9",
+    "@nestjs/serve-static": "^5.0.4",
+    "@nestjs/swagger": "^11.2.3",
+    "@nestjs/terminus": "^11.0.0",
+    "@prisma/adapter-mariadb": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "axios": "^1.13.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "dayjs": "^1.11.19",
+    "form-data": "^4.0.5",
+    "ioredis": "^5.8.2",
+    "nest-winston": "^1.10.2",
+    "node-schedule": "^2.1.1",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "prisma": "^7.1.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.2",
+    "stacktrace-js": "^2.0.2",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-angular": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0",
+    "@eslint/js": "^9.39.2",
+    "@ls-lint/ls-lint": "^2.3.1",
+    "@nestjs/cli": "^11.0.14",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.9",
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^4.17.17",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.19.3",
+    "@types/node-schedule": "^2.1.8",
+    "@types/supertest": "^6.0.3",
+    "bcrypt": "^6.0.0",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.5.0",
+    "husky": "^9.1.5",
+    "i": "^0.3.7",
+    "jest": "^30.2.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,vue}": [
+      "pnpm run format"
+    ],
+    "package.json": [
+      "pnpm run format"
+    ],
+    "*.md": [
+      "pnpm run format"
+    ]
+  },
+  "browserslist": [
+    "> 0.5%",
+    "not dead"
+  ],
+  "volta": {
+    "node": "22.21.1"
+  }
+}
