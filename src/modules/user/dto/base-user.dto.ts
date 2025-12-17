@@ -14,7 +14,7 @@ export class BaseUserDto {
   @ApiProperty({ description: '密码' })
   @IsString()
   @IsNotEmpty({ message: 'password 不能为空' })
-  @MinLength(6, { message: '密码长度不能少于6位' })
+  @MinLength(4, { message: '密码长度不能少于4位' })
   password: string;
 
   // 未来扩展字段示例：
