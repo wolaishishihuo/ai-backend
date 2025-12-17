@@ -16,7 +16,8 @@ const prisma = new PrismaClient({ adapter });
 const initUsers = [
   {
     username: 'admin',
-    password: 'admin'
+    password: 'admin',
+    email: 'admin@example.com'
   }
 ];
 

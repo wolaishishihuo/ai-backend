@@ -4,7 +4,8 @@ import { defineConfig, env } from 'prisma/config';
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
-    path: 'prisma/migrations'
+    path: 'prisma/migrations',
+    seed: 'npx ts-node prisma/seed.ts' // 添加这行
   },
   datasource: {
     url: env('MYSQL_DATABASE_URL')
