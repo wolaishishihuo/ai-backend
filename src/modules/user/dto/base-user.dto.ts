@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
 
 /**
  * 用户基础 DTO - 定义所有字段和验证规则
@@ -18,10 +18,9 @@ export class BaseUserDto {
   password: string;
 
   // 未来扩展字段示例：
-  // @ApiProperty({ description: '邮箱' })
-  // @IsEmail({}, { message: '邮箱格式不正确' })
-  // @IsOptional()
-  // email?: string;
+  @ApiProperty({ description: '邮箱' })
+  @IsEmail({}, { message: '邮箱格式不正确' })
+  email?: string;
 
   // @ApiProperty({ description: '头像' })
   // @IsUrl({}, { message: '头像必须是有效的 URL' })

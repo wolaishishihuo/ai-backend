@@ -7,5 +7,6 @@ import { BaseUserDto } from './base-user.dto';
  */
 export class CreateUserDto extends PickType(BaseUserDto, [
   'username',
-  'password'
+  'password',
+  'email'
 ] as const) {}
