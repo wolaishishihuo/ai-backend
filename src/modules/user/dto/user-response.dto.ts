@@ -15,6 +15,12 @@ export class UserResponseDto {
   @Exclude()
   password: string;
 
+  @ApiProperty({ description: '邮箱' })
+  email: string;
+
+  @ApiProperty({ description: '头像' })
+  avatar: string;
+
   @ApiProperty({ description: '创建时间' })
   createdAt: Date;
 

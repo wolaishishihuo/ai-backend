@@ -20,7 +20,7 @@ export class BaseUserDto {
   // 未来扩展字段示例：
   @ApiProperty({ description: '邮箱' })
   @IsEmail({}, { message: '邮箱格式不正确' })
-  email?: string;
+  email: string;
 
   // @ApiProperty({ description: '头像' })
   // @IsUrl({}, { message: '头像必须是有效的 URL' })

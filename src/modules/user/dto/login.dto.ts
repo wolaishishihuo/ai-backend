@@ -6,6 +6,6 @@ import { BaseUserDto } from './base-user.dto';
  * 从 BaseUserDto 中选取登录所需字段
  */
 export class LoginDto extends PickType(BaseUserDto, [
-  'username',
+  'email',
   'password'
 ] as const) {}

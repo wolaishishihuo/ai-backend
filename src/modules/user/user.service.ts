@@ -18,7 +18,7 @@ export class UserService {
   async create(data: CreateUserDto): Promise<UserResponseDto> {
     const user = await this.prisma.user.findFirst({
       where: {
-        username: data.username
+        email: data.email
       }
     });
 
@@ -31,9 +31,9 @@ export class UserService {
 
       const created = await this.prisma.user.create({
         data: {
-          username: data.username,
+          email: data.email,
           password: hashPassword,
-          email: data.email
+          username: data.username
         }
       });
       return new UserResponseDto(created);

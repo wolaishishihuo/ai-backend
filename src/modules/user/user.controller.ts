@@ -59,16 +59,16 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get(':username')
-  @ApiOperation({ summary: '根据用户名查询用户' })
+  @Get(':email')
+  @ApiOperation({ summary: '根据用户邮箱查询用户' })
   @ApiResponse({
     status: 200,
     description: '成功查询用户'
   })
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
-  findOne(@Param('username') username: string): Promise<UserResponseDto[]> {
-    return this.userService.findBy({ where: { username } });
+  findOne(@Param('email') email: string): Promise<UserResponseDto[]> {
+    return this.userService.findBy({ where: { email } });
   }
 
   @UseGuards(AuthGuard('jwt'))
