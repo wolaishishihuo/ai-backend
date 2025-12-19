@@ -24,14 +24,6 @@ export class UserService {
       throw new BadRequestException('该邮箱已被注册');
     }
 
-    // 检查用户名是否已存在
-    const existingUsername = await this.prisma.user.findFirst({
-      where: { username: data.username }
-    });
-    if (existingUsername) {
-      throw new BadRequestException('该用户名已被使用');
-    }
-
     try {
       const hashPassword = await bcrypt.hash(data.password, 10);
 
@@ -104,5 +96,23 @@ export class UserService {
       data: updateData
     });
     return new UserResponseDto(updated);
+  }
+
+  /**
+   * 根据 email 查找用户（返回完整信息，包含密码用于验证）
+   */
+  async findByEmail(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
+
+  /**
+   * 根据 email 获取用户信息（不含密码）
+   */
+  async findOneByEmail(email: string): Promise<UserResponseDto> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+    return new UserResponseDto(user);
   }
 }

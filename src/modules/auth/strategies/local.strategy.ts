@@ -10,18 +10,16 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly authService: AuthService) {
-    super();
+    // 使用 email 作为用户名字段
+    super({ usernameField: 'email' });
   }
 
-  async validate(username: string, password: string): Promise<any> {
-    if (!username || !password) {
-      throw new BadRequestException('用户名和密码不能为空');
+  async validate(email: string, password: string): Promise<any> {
+    if (!email || !password) {
+      throw new BadRequestException('邮箱和密码不能为空');
     }
 
-    const { user, code } = await this.authService.validateUser(
-      username,
-      password
-    );
+    const { user, code } = await this.authService.validateUser(email, password);
 
     switch (code) {
       case 1:

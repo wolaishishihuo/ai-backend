@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
   UseInterceptors
 } from '@nestjs/common';
@@ -43,6 +44,19 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async create(@Body() createUserDto: CreateUserDto): Promise<void> {
     await this.userService.create(createUserDto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('current')
+  @ApiOperation({ summary: '获取当前登录用户信息' })
+  @ApiResponse({
+    status: 200,
+    description: '返回当前用户信息'
+  })
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(ClassSerializerInterceptor)
+  getCurrentUser(@Req() req: any): Promise<UserResponseDto> {
+    return this.userService.findOneByEmail(req.user.email);
   }
 
   @UseGuards(AuthGuard('jwt'))

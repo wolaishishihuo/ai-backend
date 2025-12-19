@@ -1,4 +1,8 @@
-import { Injectable, NotAcceptableException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  UnauthorizedException
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
@@ -10,10 +14,9 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  // validate user
-  async validateUser(username: string, password: string): Promise<any> {
-    const users = await this.userService.findBy({ where: { username } });
-    const user = users[0];
+  // validate user by email
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.userService.findByEmail(email);
 
     if (!user) {
       return { code: 3, user: null };
@@ -26,10 +29,22 @@ export class AuthService {
     return { code: 2, user: null };
   }
 
-  // jwt certificate
-  async certificate(user: any) {
+  // jwt certificate - 使用 email 生成 token
+  async certificate(loginDto: any) {
+    const { code, user } = await this.validateUser(
+      loginDto.email,
+      loginDto.password
+    );
+
+    if (code === 3) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    if (code === 2) {
+      throw new UnauthorizedException('密码错误');
+    }
+
     const payload = {
-      username: user.username,
+      email: user.email,
       sub: user.id
     };
     try {
