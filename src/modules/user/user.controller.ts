@@ -19,6 +19,7 @@ import { UserService } from './user.service';
 import { AuthService } from '../auth/auth.service';
 import { CreateUserDto, LoginDto, UpdateUserDto, UserResponseDto } from './dto';
 import { PaginationDto } from '@src/common/dto/pagination.dto';
+import { ParseRequiredPipe } from '@src/common/pipes';
 
 @ApiTags('用户模块')
 @Controller('user')
@@ -67,7 +68,9 @@ export class UserController {
   })
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
-  findOne(@Param('email') email: string): Promise<UserResponseDto[]> {
+  findOne(
+    @Param('email', new ParseRequiredPipe('邮箱')) email: string
+  ): Promise<UserResponseDto[]> {
     return this.userService.findBy({ where: { email } });
   }
 
