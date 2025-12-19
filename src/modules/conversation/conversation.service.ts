@@ -5,7 +5,6 @@ import {
   PaginationDto,
   PaginatedResponseDto
 } from '@src/common/dto/pagination.dto';
-
 @Injectable()
 export class ConversationService {
   constructor(private prisma: PrismaService) {}
@@ -14,7 +13,8 @@ export class ConversationService {
     return this.prisma.conversation.create({
       data: {
         userId: createConversationDto.userId,
-        title: createConversationDto.title
+        title: createConversationDto.description.slice(0, 5) + '...',
+        description: createConversationDto.description
       }
     });
   }
