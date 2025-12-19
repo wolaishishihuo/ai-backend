@@ -41,9 +41,8 @@ export class UserController {
   @ApiOperation({ summary: '用户注册' })
   @ApiResponse({ status: 200, description: '用户注册成功' })
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
-  create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto): Promise<void> {
+    await this.userService.create(createUserDto);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -67,10 +66,7 @@ export class UserController {
     description: '成功查询用户'
   })
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(ClassSerializerInterceptor)
-  findOne(
-    @Param('email', new ParseRequiredPipe('邮箱')) email: string
-  ): Promise<UserResponseDto[]> {
+  findOne(@Param('email', new ParseRequiredPipe('邮箱')) email: string) {
     return this.userService.findBy({ where: { email } });
   }
 

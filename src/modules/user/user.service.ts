@@ -15,28 +15,34 @@ import * as bcrypt from 'bcrypt';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        email: data.email
-      }
+  async create(data: CreateUserDto): Promise<void> {
+    // 检查邮箱是否已存在
+    const existingEmail = await this.prisma.user.findFirst({
+      where: { email: data.email }
     });
+    if (existingEmail) {
+      throw new BadRequestException('该邮箱已被注册');
+    }
 
-    if (user) {
-      throw new BadRequestException('用户已存在');
+    // 检查用户名是否已存在
+    const existingUsername = await this.prisma.user.findFirst({
+      where: { username: data.username }
+    });
+    if (existingUsername) {
+      throw new BadRequestException('该用户名已被使用');
     }
 
     try {
       const hashPassword = await bcrypt.hash(data.password, 10);
 
-      const created = await this.prisma.user.create({
+      await this.prisma.user.create({
         data: {
           email: data.email,
           password: hashPassword,
           username: data.username
         }
       });
-      return new UserResponseDto(created);
+      return;
     } catch (error) {
       throw new InternalServerErrorException(`创建用户失败: ${error}`);
     }

@@ -9,7 +9,6 @@ export class ParseRequiredPipe implements PipeTransform<string, string> {
 
   transform(value: string): string {
     const invalidValues = ['undefined', 'null', ''];
-    console.log(1);
 
     if (!value || invalidValues.includes(value.trim().toLowerCase())) {
       throw new BadRequestException(`${this.paramName}不能为空`);
