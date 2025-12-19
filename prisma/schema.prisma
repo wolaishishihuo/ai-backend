@@ -13,7 +13,14 @@ datasource db {
   provider = "mysql"
 }
 
+// 消息角色枚举
+enum MessageRole {
+  user
+  assistant
+  system
+}
 
+// 用户模型
 model User {
   id          String   @id @default(uuid())
   username    String
@@ -22,5 +29,36 @@ model User {
   avatar      String   @default("https://avatars.githubusercontent.com/u/100000000?v=4")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  conversations Conversation[]
 }
 
+
+// 会话模型
+model Conversation {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  messages Message[]
+  @@map("conversations")
+}
+
+
+// 消息模型 - 参考 Vercel AI SDK useChat 的 message 格式
+model Message {
+  id            String   @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  // role: 'user' | 'assistant' | 'system'
+  role          MessageRole @default(user)
+  // parts: UIMessagePart[] - 存储消息的多个部分（文本、图片、工具调用等）
+  // 格式示例: [{ type: 'text', text: '...' }, { type: 'file', mimeType: '...', data: '...' }]
+  parts         Json     @default("[]")
+  // metadata: 可选的元数据，如时间戳、模型标识等
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@map("messages")
+}
