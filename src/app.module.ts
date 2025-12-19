@@ -8,6 +8,7 @@ import { PrismaModule } from './datasources/prisma/prisma.module';
 import { RedisModule } from './datasources/redis/redis.module';
 import { HttpModule } from './common/http/http.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { ConversationModule } from './modules/conversation/conversation.module';
     RedisModule,
     HealthModule,
     UserModule,
-    ConversationModule
+    ConversationModule,
+    ChatModule
   ]
 })
 export class AppModule {}

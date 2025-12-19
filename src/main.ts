@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -55,8 +55,9 @@ async function bootstrap() {
   // 全局异常过滤器
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // 全局响应拦截器
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  // 全局响应拦截器（使用 Reflector 支持装饰器元数据读取）
+  const reflector = app.get(Reflector);
+  app.useGlobalInterceptors(new ResponseInterceptor(reflector));
 
   // 使用swagger生成API文档
   useSwagger(app);
@@ -71,7 +72,7 @@ async function bootstrap() {
   // 服务地址
   const serviceUrl = (await app.getUrl()).replace('[::1]', 'localhost');
   logger.info(`Application is running at: ${serviceUrl}`);
-  logger.info(`Swagger API is running at: ${serviceUrl}/api`);
+  logger.info(`Swagger API is running at: ${serviceUrl}/docs`);
   logger.info(`This ENV is: ${configService.get('NODE_ENV')}`);
 }
 
