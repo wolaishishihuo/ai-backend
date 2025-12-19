@@ -9,7 +9,13 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HttpCode, HttpStatus } from '@nestjs/common';
 import type { Response } from 'express';
 import { GenerateConversationDto } from './dto/generate-conversation.dto';
-import { convertToModelMessages, streamText } from 'ai';
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  createUIMessageStream,
+  pipeUIMessageStreamToResponse
+} from 'ai';
 import { SkipResponseInterceptor } from '@src/common/decorators';
 import { ConfigService } from '@nestjs/config';
 import { createDeepSeek } from '@ai-sdk/deepseek';
@@ -26,7 +32,7 @@ export class ChatController {
   @SkipResponseInterceptor() // 跳过响应拦截器，支持流式传输
   async generateConversation(
     @Body() generateConversationDto: GenerateConversationDto,
-    @Res() res: Response
+    @Res() response: Response
   ) {
     const { modelType, messages } = generateConversationDto;
 
@@ -35,17 +41,31 @@ export class ChatController {
     if (!apiKey) {
       throw new BadRequestException('DEEPSEEK_API_KEY is not set');
     }
+
     const deepseek = createDeepSeek({
       apiKey
     });
 
-    const result = streamText({
-      model: deepseek(modelType), // 直接用模型名
-      messages: convertToModelMessages(messages)
+    // ✅ 使用 createUIMessageStream 创建流
+    const stream = createUIMessageStream({
+      execute: async ({ writer }) => {
+        const result = streamText({
+          model: deepseek(modelType),
+          messages: await convertToModelMessages(messages),
+          stopWhen: stepCountIs(5)
+        });
+
+        // ✅ 使用 toUIMessageStream 支持 sendReasoning
+        writer.merge(
+          result.toUIMessageStream({
+            sendReasoning: true,
+            sendSources: true
+          })
+        );
+      }
     });
-    // 使用 AI SDK 内置方法直接 pipe 流式响应到 Node.js Response
-    result.pipeUIMessageStreamToResponse(res, {
-      sendReasoning: true
-    });
+
+    // ✅ 使用 pipeUIMessageStreamToResponse 将流输出到响应
+    pipeUIMessageStreamToResponse({ stream, response });
   }
 }
