@@ -10,7 +10,6 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
   UseInterceptors
 } from '@nestjs/common';
@@ -21,6 +20,8 @@ import { AuthService } from '../auth/auth.service';
 import { CreateUserDto, LoginDto, UpdateUserDto, UserResponseDto } from './dto';
 import { PaginationDto } from '@src/common/dto/pagination.dto';
 import { ParseRequiredPipe } from '@src/common/pipes';
+import { User } from '@src/common/decorators';
+import { JwtUser } from '@src/modules/auth/strategies/jwt.strategy';
 
 @ApiTags('用户模块')
 @Controller('user')
@@ -55,8 +56,8 @@ export class UserController {
   })
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(ClassSerializerInterceptor)
-  getCurrentUser(@Req() req: any): Promise<UserResponseDto> {
-    return this.userService.findOneByEmail(req.user.email);
+  getCurrentUser(@User() user: JwtUser): Promise<UserResponseDto> {
+    return this.userService.findOneByEmail(user.email);
   }
 
   @UseGuards(AuthGuard('jwt'))
