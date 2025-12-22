@@ -40,7 +40,8 @@ export class ChatController {
     @Body() generateConversationDto: GenerateConversationDto,
     @Res() response: Response
   ) {
-    const { modelType, messages, conversationId } = generateConversationDto;
+    const { modelType, messages, conversationId, regenerate } =
+      generateConversationDto;
 
     const apiKey = this.configService.get('DEEPSEEK_API_KEY');
 
@@ -52,18 +53,28 @@ export class ChatController {
       apiKey
     });
 
+    // 如果是重新生成，先删除上一条 assistant 消息
+    if (regenerate) {
+      await this.messageService.deleteLastMessageByRole(
+        conversationId,
+        'assistant'
+      );
+    }
+
     const conversationMessages =
       await this.messageService.findMessagesByConversationId(conversationId);
 
     // 获取用户发送的最新消息
     const userMessage = messages[messages.length - 1];
 
-    // 先存储用户消息
-    await this.messageService.createMessage(
-      conversationId,
-      userMessage.parts,
-      'user'
-    );
+    // 非重新生成时才存储用户消息
+    if (!regenerate) {
+      await this.messageService.createMessage(
+        conversationId,
+        userMessage.parts,
+        'user'
+      );
+    }
 
     // ✅ 使用 createUIMessageStream 创建流
     const stream = createUIMessageStream({

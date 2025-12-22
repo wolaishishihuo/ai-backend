@@ -44,4 +44,27 @@ export class MessageService {
       parts: JSON.parse(message.parts as string)
     }));
   }
+
+  /**
+   * 删除会话中最后一条指定角色的消息
+   */
+  async deleteLastMessageByRole(conversationId: string, role: MessageRole) {
+    const lastMessage = await this.prisma.message.findFirst({
+      where: {
+        conversationId,
+        role
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    if (lastMessage) {
+      await this.prisma.message.delete({
+        where: { id: lastMessage.id }
+      });
+    }
+
+    return lastMessage;
+  }
 }

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString
+} from 'class-validator';
 import { UIMessage } from 'ai';
 
 // 改成真正的 enum
@@ -30,4 +37,14 @@ export class GenerateConversationDto {
   @IsArray()
   @IsNotEmpty({ message: 'messages 不能为空' })
   messages: UIMessage[];
+
+  @ApiProperty({
+    description:
+      '是否为重新生成（重新生成时不会重复存储用户消息，并会删除上一条 assistant 消息）',
+    required: false,
+    default: false
+  })
+  @IsBoolean()
+  @IsOptional()
+  regenerate?: boolean;
 }

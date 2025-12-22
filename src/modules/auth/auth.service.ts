@@ -1,8 +1,7 @@
 import {
   BadRequestException,
   Injectable,
-  NotAcceptableException,
-  UnauthorizedException
+  NotAcceptableException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
