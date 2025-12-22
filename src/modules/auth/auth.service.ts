@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotAcceptableException,
   UnauthorizedException
@@ -37,10 +38,10 @@ export class AuthService {
     );
 
     if (code === 3) {
-      throw new UnauthorizedException('用户不存在');
+      throw new BadRequestException('用户不存在');
     }
     if (code === 2) {
-      throw new UnauthorizedException('密码错误');
+      throw new BadRequestException('密码错误');
     }
 
     const payload = {
