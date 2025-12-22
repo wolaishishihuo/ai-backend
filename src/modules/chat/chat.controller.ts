@@ -29,6 +29,7 @@ import { JwtUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('AI 模块')
 @Controller('chat')
+@UseGuards(AuthGuard('jwt'))
 export class ChatController {
   constructor(
     private readonly configService: ConfigService,
@@ -36,7 +37,6 @@ export class ChatController {
     private readonly usageService: UsageService
   ) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('generate')
   @ApiOperation({ summary: '生成会话' })
   @ApiResponse({ status: 200, description: '生成会话成功' })

@@ -19,10 +19,10 @@ import { ParseRequiredPipe } from '@src/common/pipes';
 
 @ApiTags('会话模块')
 @Controller('conversation')
+@UseGuards(AuthGuard('jwt'))
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('create')
   @ApiOperation({ summary: '创建会话' })
   @ApiResponse({ status: 200, description: '创建会话成功' })
@@ -34,7 +34,6 @@ export class ConversationController {
     return this.conversationService.create(createConversationDto, user.id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('list')
   @ApiOperation({ summary: '获取会话列表' })
   @ApiResponse({ status: 200, description: '获取会话列表成功' })
@@ -43,7 +42,6 @@ export class ConversationController {
     return this.conversationService.findAll(user.id, pagination);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('detail/:id')
   @ApiOperation({ summary: '获取会话详情' })
   @ApiResponse({ status: 200, description: '获取会话详情成功' })
@@ -52,7 +50,6 @@ export class ConversationController {
     return this.conversationService.findOne(id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Delete('delete/:id')
   @ApiOperation({ summary: '删除会话' })
   @ApiResponse({ status: 200, description: '删除会话成功' })

@@ -145,9 +145,21 @@ export class StatisticsService {
    * 单个会话统计
    */
   async getConversationStats(conversationId: string) {
-    const [messageCount, usageStats] = await Promise.all([
+    const [messageCount, usageStats, modelStats] = await Promise.all([
       this.prisma.message.count({ where: { conversationId } }),
       this.prisma.usage.aggregate({
+        where: { conversationId },
+        _sum: {
+          inputTokens: true,
+          outputTokens: true,
+          totalTokens: true,
+          estimatedCost: true
+        },
+        _count: true
+      }),
+      // 按模型分组统计
+      this.prisma.usage.groupBy({
+        by: ['model'],
         where: { conversationId },
         _sum: {
           inputTokens: true,
@@ -165,7 +177,15 @@ export class StatisticsService {
       inputTokens: usageStats._sum.inputTokens || 0,
       outputTokens: usageStats._sum.outputTokens || 0,
       totalTokens: usageStats._sum.totalTokens || 0,
-      estimatedCost: Number(usageStats._sum.estimatedCost || 0)
+      estimatedCost: Number(usageStats._sum.estimatedCost || 0),
+      byModel: modelStats.map((m) => ({
+        model: m.model,
+        count: m._count,
+        inputTokens: m._sum.inputTokens || 0,
+        outputTokens: m._sum.outputTokens || 0,
+        totalTokens: m._sum.totalTokens || 0,
+        cost: Number(m._sum.estimatedCost || 0)
+      }))
     };
   }
 
