@@ -30,6 +30,7 @@ model User {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   conversations Conversation[]
+  usages      Usage[]
 }
 
 
@@ -41,7 +42,8 @@ model Conversation {
   title       String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  messages Message[]
+  messages    Message[]
+  usages      Usage[]
   @@map("conversations")
 }
 
@@ -60,5 +62,31 @@ model Message {
   metadata      Json?    @default("{}")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  usage         Usage?
   @@map("messages")
+}
+
+// AI 调用用量记录
+model Usage {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId    String
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  messageId         String   @unique
+  message           Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  model             String   // deepseek-chat / deepseek-reasoner
+  inputTokens       Int
+  outputTokens      Int
+  totalTokens       Int
+  cachedInputTokens Int      @default(0)
+  reasoningTokens   Int      @default(0)
+  estimatedCost     Decimal  @db.Decimal(10, 6) // 估算费用（元）
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([model])
+  @@index([createdAt])
+  @@map("usages")
 }

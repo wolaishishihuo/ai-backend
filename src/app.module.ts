@@ -9,6 +9,7 @@ import { RedisModule } from './datasources/redis/redis.module';
 import { HttpModule } from './common/http/http.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { ChatModule } from './modules/chat/chat.module';
     HealthModule,
     UserModule,
     ConversationModule,
-    ChatModule
+    ChatModule,
+    StatisticsModule
   ]
 })
 export class AppModule {}

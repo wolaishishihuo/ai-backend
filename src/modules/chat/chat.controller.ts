@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Post,
-  Res
+  Res,
+  UseGuards
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HttpCode, HttpStatus } from '@nestjs/common';
@@ -18,19 +19,24 @@ import {
   TextUIPart,
   ReasoningUIPart
 } from 'ai';
-import { SkipResponseInterceptor } from '@src/common/decorators';
+import { SkipResponseInterceptor, User } from '@src/common/decorators';
 import { ConfigService } from '@nestjs/config';
 import { createDeepSeek } from '@ai-sdk/deepseek';
 import { MessageService } from '../message/message.service';
+import { UsageService } from '../statistics/usage.service';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('AI 模块')
 @Controller('chat')
 export class ChatController {
   constructor(
     private readonly configService: ConfigService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly usageService: UsageService
   ) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('generate')
   @ApiOperation({ summary: '生成会话' })
   @ApiResponse({ status: 200, description: '生成会话成功' })
@@ -38,10 +44,12 @@ export class ChatController {
   @SkipResponseInterceptor() // 跳过响应拦截器，支持流式传输
   async generateConversation(
     @Body() generateConversationDto: GenerateConversationDto,
+    @User() user: JwtUser,
     @Res() response: Response
   ) {
     const { modelType, messages, conversationId, regenerate } =
       generateConversationDto;
+    const userId = user.id;
 
     const apiKey = this.configService.get('DEEPSEEK_API_KEY');
 
@@ -87,7 +95,7 @@ export class ChatController {
           ]),
           stopWhen: stepCountIs(5),
           // 流结束时存储 assistant 消息
-          onFinish: async ({ text, reasoning, response }) => {
+          onFinish: async ({ text, reasoning, response, usage }) => {
             const parts: Array<TextUIPart | ReasoningUIPart> = [];
 
             // 添加 reasoning 部分（如果有）
@@ -107,7 +115,7 @@ export class ChatController {
             }
 
             if (parts.length > 0) {
-              await this.messageService.createMessage(
+              const message = await this.messageService.createMessage(
                 conversationId,
                 parts,
                 'assistant',
@@ -116,6 +124,21 @@ export class ChatController {
                   modelId: response.modelId
                 }
               );
+
+              // 记录用量
+              if (userId) {
+                await this.usageService.createUsage({
+                  userId,
+                  conversationId,
+                  messageId: message.id,
+                  model: modelType,
+                  inputTokens: usage.inputTokens || 0,
+                  outputTokens: usage.outputTokens || 0,
+                  totalTokens: usage.totalTokens,
+                  cachedInputTokens: usage?.cachedInputTokens || 0,
+                  reasoningTokens: usage?.reasoningTokens || 0
+                });
+              }
             }
           }
         });
