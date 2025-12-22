@@ -39,7 +39,6 @@ model Conversation {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title       String
-  description String   @db.VarChar(1024)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   messages Message[]
@@ -58,7 +57,7 @@ model Message {
   // 格式示例: [{ type: 'text', text: '...' }, { type: 'file', mimeType: '...', data: '...' }]
   parts         Json     @default("[]")
   // metadata: 可选的元数据，如时间戳、模型标识等
-  metadata      Json?
+  metadata      Json?    @default("{}")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   @@map("messages")

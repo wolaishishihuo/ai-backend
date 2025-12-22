@@ -4,7 +4,6 @@ import { MessageModule } from '../message/message.module';
 
 @Module({
   imports: [MessageModule],
-  controllers: [ChatController],
-  exports: [ChatController]
+  controllers: [ChatController]
 })
 export class ChatModule {}

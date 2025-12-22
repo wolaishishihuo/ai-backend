@@ -27,8 +27,11 @@ export class ConversationController {
   @ApiOperation({ summary: '创建会话' })
   @ApiResponse({ status: 200, description: '创建会话成功' })
   @HttpCode(HttpStatus.OK)
-  create(@Body() createConversationDto: CreateConversationDto) {
-    return this.conversationService.create(createConversationDto);
+  create(
+    @Body() createConversationDto: CreateConversationDto,
+    @User() user: JwtUser
+  ) {
+    return this.conversationService.create(createConversationDto, user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))

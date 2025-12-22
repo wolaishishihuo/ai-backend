@@ -9,14 +9,14 @@ import {
 export class ConversationService {
   constructor(private prisma: PrismaService) {}
 
-  create(createConversationDto: CreateConversationDto) {
-    return this.prisma.conversation.create({
+  async create(createConversationDto: CreateConversationDto, userId: string) {
+    const conversation = await this.prisma.conversation.create({
       data: {
-        userId: createConversationDto.userId,
-        title: createConversationDto.description.slice(0, 5) + '...',
-        description: createConversationDto.description
+        userId,
+        title: createConversationDto.title
       }
     });
+    return conversation.id;
   }
 
   async findAll(userId: string, pagination: PaginationDto) {
@@ -44,12 +44,35 @@ export class ConversationService {
     return new PaginatedResponseDto(conversations, total, page, pageSize);
   }
 
-  findOne(id: string) {
-    return this.prisma.conversation.findUnique({
+  async findOne(id: string) {
+    const conversation = await this.prisma.conversation.findUnique({
       where: {
         id
+      },
+      include: {
+        messages: {
+          orderBy: {
+            createdAt: 'asc'
+          },
+          select: {
+            id: true,
+            parts: true,
+            role: true,
+            createdAt: true
+          }
+        }
       }
     });
+
+    // 将 parts JSON 字符串转换为对象
+    if (conversation?.messages) {
+      conversation.messages = conversation.messages.map((msg) => ({
+        ...msg,
+        parts: typeof msg.parts === 'string' ? JSON.parse(msg.parts) : msg.parts
+      }));
+    }
+
+    return conversation;
   }
 
   remove(id: string) {
