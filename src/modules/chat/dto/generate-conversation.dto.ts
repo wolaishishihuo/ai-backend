@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { UIMessage } from 'ai';
 
 // 改成真正的 enum
@@ -9,6 +9,14 @@ export enum ModelType {
 }
 
 export class GenerateConversationDto {
+  @ApiProperty({
+    description: '会话ID',
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty({ message: '会话ID不能为空' })
+  conversationId: string;
+
   @ApiProperty({
     description: '模型类型',
     enum: ModelType

@@ -14,16 +14,22 @@ import {
   stepCountIs,
   streamText,
   createUIMessageStream,
-  pipeUIMessageStreamToResponse
+  pipeUIMessageStreamToResponse,
+  TextUIPart,
+  ReasoningUIPart
 } from 'ai';
 import { SkipResponseInterceptor } from '@src/common/decorators';
 import { ConfigService } from '@nestjs/config';
 import { createDeepSeek } from '@ai-sdk/deepseek';
+import { MessageService } from '../message/message.service';
 
 @ApiTags('AI 模块')
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly messageService: MessageService
+  ) {}
 
   @Post('generate')
   @ApiOperation({ summary: '生成会话' })
@@ -34,7 +40,7 @@ export class ChatController {
     @Body() generateConversationDto: GenerateConversationDto,
     @Res() response: Response
   ) {
-    const { modelType, messages } = generateConversationDto;
+    const { modelType, messages, conversationId } = generateConversationDto;
 
     const apiKey = this.configService.get('DEEPSEEK_API_KEY');
 
@@ -46,13 +52,61 @@ export class ChatController {
       apiKey
     });
 
+    const conversationMessages =
+      await this.messageService.findMessagesByConversationId(conversationId);
+
+    // 获取用户发送的最新消息
+    const userMessage = messages[messages.length - 1];
+
+    // 先存储用户消息
+    await this.messageService.createMessage(
+      conversationId,
+      userMessage.parts,
+      'user'
+    );
+
     // ✅ 使用 createUIMessageStream 创建流
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
         const result = streamText({
           model: deepseek(modelType),
-          messages: await convertToModelMessages(messages),
-          stopWhen: stepCountIs(5)
+          messages: convertToModelMessages([
+            ...conversationMessages,
+            ...messages
+          ]),
+          stopWhen: stepCountIs(5),
+          // 流结束时存储 assistant 消息
+          onFinish: async ({ text, reasoning, response }) => {
+            const parts: Array<TextUIPart | ReasoningUIPart> = [];
+
+            // 添加 reasoning 部分（如果有）
+            if (reasoning && reasoning.length > 0) {
+              const reasoningText = reasoning
+                .map((r) => r.text)
+                .filter(Boolean)
+                .join('');
+              if (reasoningText) {
+                parts.push({ type: 'reasoning', text: reasoningText });
+              }
+            }
+
+            // 添加 text 部分
+            if (text) {
+              parts.push({ type: 'text', text });
+            }
+
+            if (parts.length > 0) {
+              await this.messageService.createMessage(
+                conversationId,
+                parts,
+                'assistant',
+                {
+                  model: modelType,
+                  modelId: response.modelId
+                }
+              );
+            }
+          }
         });
 
         // ✅ 使用 toUIMessageStream 支持 sendReasoning
