@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as winston from 'winston';
 import { WinstonModule } from 'nest-winston';
+import * as bodyParser from 'body-parser';
 import LoggerConfig from './common/configs/logger.config';
 import { AppModule } from './app.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
@@ -36,6 +37,10 @@ async function bootstrap() {
     origin: corsOrigin ? corsOrigin.split(',') : true,
     credentials: true
   });
+
+  // 增加请求体大小限制（默认 100KB 太小，对话历史可能很长）
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   // 服务统一前缀（适用于统一网关服务）
   app.setGlobalPrefix('api');
