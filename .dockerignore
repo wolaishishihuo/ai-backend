@@ -1,2 +1,35 @@
-/logs
-/test
+# 依赖和构建产物
+node_modules
+dist
+
+# 日志和测试
+logs
+test
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 环境文件（敏感信息）
+.env
+.env.*
+!.env.example
+
+# Docker 相关
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 文档和杂项
+*.md
+*.log
+*.gz
+.DS_Store
+.husky
+.claude
