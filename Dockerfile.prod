@@ -34,7 +34,7 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
     npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile && \
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts && \
     rm -rf /root/.npm /root/.pnpm-store
 
 # 复制 Prisma 文件并生成 Client（确保平台兼容）
