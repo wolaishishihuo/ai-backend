@@ -1,6 +1,6 @@
-# NestJS 模板服务器
+# AI Web 后端
 
-开箱即用的 NestJS 服务端应用脚手架
+基于 NestJS 的 AI 聊天应用后端服务
 
 ## 技术栈
 
