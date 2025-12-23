@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^1.0.32",
+    "bcrypt": "^6.0.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
@@ -48,6 +49,7 @@
     "@prisma/client": "^7.1.0",
     "ai": "^5.0.115",
     "axios": "^1.13.2",
+    "body-parser": "^1.20.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "dayjs": "^1.11.19",
@@ -81,7 +83,6 @@
     "@types/node": "^22.19.3",
     "@types/node-schedule": "^2.1.8",
     "@types/supertest": "^6.0.3",
-    "bcrypt": "^6.0.0",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",

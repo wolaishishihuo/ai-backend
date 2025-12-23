@@ -1,30 +1,44 @@
-# 构建阶段
-FROM node:18-alpine AS builder
+# ============================================
+# 构建阶段 - 安装所有依赖并构建应用
+# ============================================
+FROM node:22.13.0-slim AS builder
 
 WORKDIR /app
 
 # 安装 pnpm
 RUN npm install -g pnpm
 
-# 复制依赖文件
+# 复制依赖文件（利用 Docker 缓存层）
 COPY package.json pnpm-lock.yaml ./
 
-# 安装依赖
-RUN pnpm install --frozen-lockfile
+# 安装所有依赖（包括 devDependencies，用于构建，跳过 husky postinstall）
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# 复制源码和 prisma
+# 复制 Prisma 相关文件
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+
+# 生成 Prisma Client（提供临时 URL 用于生成）
+RUN MYSQL_DATABASE_URL="mysql://temp:temp@localhost:3306/temp" npx prisma generate
+
+# 复制源码
 COPY . .
 
-# 生成 Prisma Client
-RUN npx prisma generate
-
-# 构建
+# 构建应用
 RUN pnpm run build
 
-# 生产阶段
-FROM node:18-alpine
+# ============================================
+# 生产阶段 - 只包含运行时必需的文件
+# ============================================
+FROM node:22.13.0-slim
 
 WORKDIR /app
+
+# 安装系统依赖（包括 bcrypt 编译所需的工具）
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl curl python3 make g++ && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 # 安装 pnpm
 RUN npm install -g pnpm
@@ -32,21 +46,32 @@ RUN npm install -g pnpm
 # 复制依赖文件
 COPY package.json pnpm-lock.yaml ./
 
-# 只安装生产依赖
-RUN pnpm install --prod --frozen-lockfile
+# 只安装生产依赖（移除 --ignore-scripts 以允许 bcrypt 编译）
+RUN pnpm install --prod --frozen-lockfile && \
+    rm -rf /root/.npm /root/.pnpm-store
+
+# 复制 Prisma 相关文件
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./
+
+# 生成 Prisma Client
+RUN MYSQL_DATABASE_URL="mysql://temp:temp@localhost:3306/temp" npx prisma generate
 
 # 复制构建产物
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
 
-# 安装 openssl (Prisma 需要)
-RUN apk add --no-cache openssl
+# 复制静态资源
+COPY --from=builder /app/public ./public
 
+# 设置环境变量
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
 
-# 启动时执行数据库迁移并启动服务
-CMD ["sh", "-c", "npx prisma db push && node dist/main.js"]
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# 启动时同步数据库并运行应用
+CMD ["sh", "-c", "npx prisma db push && node dist/src/main.js"]
