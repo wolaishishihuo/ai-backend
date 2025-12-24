@@ -29,7 +29,11 @@ export class ResponseInterceptor implements NestInterceptor {
     // 响应统一数据结构
     return next.handle().pipe(
       map((data) => {
-        if (typeof data === 'object' && Object.keys(data).includes('code')) {
+        if (
+          data &&
+          typeof data === 'object' &&
+          Object.keys(data).includes('code')
+        ) {
           return {
             data: data?.data || '',
             code: data.code,

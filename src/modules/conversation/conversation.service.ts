@@ -76,6 +76,9 @@ export class ConversationService {
   }
 
   async update(id: string, updateConversationDto: CreateConversationDto) {
+    console.log(updateConversationDto);
+    console.log(id);
+
     const conversation = await this.prisma.conversation.update({
       where: {
         id
