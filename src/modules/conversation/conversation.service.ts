@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { PrismaService } from '@src/datasources/prisma/prisma.service';
 import {
@@ -75,11 +75,30 @@ export class ConversationService {
     return conversation;
   }
 
-  remove(id: string) {
-    return this.prisma.conversation.delete({
+  async update(id: string, updateConversationDto: CreateConversationDto) {
+    const conversation = await this.prisma.conversation.update({
+      where: {
+        id
+      },
+      data: {
+        title: updateConversationDto.title
+      }
+    });
+    if (!conversation) {
+      throw new BadRequestException('该会话不存在');
+    }
+    return null;
+  }
+
+  async remove(id: string) {
+    const conversation = await this.prisma.conversation.delete({
       where: {
         id
       }
     });
+    if (!conversation) {
+      throw new BadRequestException('该会话不存在');
+    }
+    return null;
   }
 }

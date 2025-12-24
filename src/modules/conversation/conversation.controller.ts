@@ -50,6 +50,17 @@ export class ConversationController {
     return this.conversationService.findOne(id);
   }
 
+  @Post('update/:id')
+  @ApiOperation({ summary: '更新会话' })
+  @ApiResponse({ status: 200, description: '更新会话成功' })
+  @HttpCode(HttpStatus.OK)
+  update(
+    @Param('id', new ParseRequiredPipe('会话ID')) id: string,
+    @Body() updateConversationDto: CreateConversationDto
+  ) {
+    return this.conversationService.update(id, updateConversationDto);
+  }
+
   @Delete('delete/:id')
   @ApiOperation({ summary: '删除会话' })
   @ApiResponse({ status: 200, description: '删除会话成功' })
