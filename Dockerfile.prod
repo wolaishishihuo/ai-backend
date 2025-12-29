@@ -1,58 +1,77 @@
 # ============================================
 # 构建阶段
 # ============================================
-FROM node:22-slim AS builder
+FROM node:22.12-slim AS builder
 
 WORKDIR /app
 
+# 安装系统依赖（bcrypt 需要编译工具）
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
     apt-get update && \
-    apt-get install -y --no-install-recommends openssl && \
+    apt-get install -y --no-install-recommends \
+        openssl \
+        python3 \
+        make \
+        g++ && \
     rm -rf /var/lib/apt/lists/* && \
     npm install -g pnpm
 
-# 先复制依赖文件（利用缓存）
+# 1. 依赖安装（package.json 变化才重新执行）
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# 再复制 Prisma 并生成
+# 2. Prisma 生成（schema 变化才重新执行）
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 RUN MYSQL_DATABASE_URL="mysql://x:x@localhost:3306/x" pnpm run db:generate
 
-# 最后复制源码并构建
-COPY . .
-RUN pnpm run build && pnpm prune --prod
+# 3. 源码构建（只复制必要文件）
+COPY tsconfig*.json nest-cli.json ./
+COPY src ./src
+COPY public ./public
+RUN pnpm run build
+
+# 4. 清理开发依赖（单独一层，便于调试）
+RUN pnpm prune --prod
 
 # ============================================
 # 生产阶段
 # ============================================
-FROM node:22-slim AS production
+FROM node:22.12-slim AS production
 
 WORKDIR /app
 
+# 安装运行时依赖 + 创建用户
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
     apt-get update && \
-    apt-get install -y --no-install-recommends openssl curl dumb-init && \
+    apt-get install -y --no-install-recommends \
+        openssl \
+        curl \
+        dumb-init && \
     rm -rf /var/lib/apt/lists/* && \
-    # 全局安装 prisma CLI（用于 migrate deploy）
-    npm install -g prisma && \
     groupadd --gid 1001 nodejs && \
     useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nestjs
 
+# 复制构建产物
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/public ./public
 
-ENV NODE_ENV=production PORT=3000
+# 创建日志目录（Winston 需要）
+RUN mkdir -p /app/logs && chown nestjs:nodejs /app/logs
+
+ENV NODE_ENV=production \
+    PORT=3000
+
 USER nestjs
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
-# dumb-init 正确处理容器信号
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["sh", "-c", "prisma migrate deploy && node dist/src/main.js"]
+
+# 使用 npx prisma（确保版本与项目一致）
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
