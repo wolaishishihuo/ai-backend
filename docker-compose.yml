@@ -2,6 +2,25 @@ version: '3.8'
 
 services:
   # ============================================
+  # 数据库迁移服务（一次性执行）
+  # ============================================
+  migrate:
+    image: ai-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: ai-migrate
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      NODE_ENV: production
+      MYSQL_DATABASE_URL: mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@host.docker.internal:3306/${DATABASE_NAME}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - ai-network
+    restart: 'no'
+
+  # ============================================
   # 后端 API 服务
   # ============================================
   backend:
@@ -11,6 +30,9 @@ services:
       dockerfile: Dockerfile.prod
     container_name: ai-backend
     restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     ports:
       - '3000:3000'
     environment:
@@ -47,9 +69,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G  # 改成 1G
+          memory: 1G
         reservations:
-          memory: 256M  # 改成 256M
+          memory: 256M
 
 networks:
   ai-network:

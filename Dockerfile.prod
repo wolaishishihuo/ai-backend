@@ -1,7 +1,6 @@
 # ============================================
 # 构建阶段
 # ============================================
-# 使用官方 Node 镜像
 FROM node:22-slim AS builder
 
 WORKDIR /app
@@ -26,24 +25,29 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./
 RUN MYSQL_DATABASE_URL="mysql://x:x@localhost:3306/x" pnpm run db:generate
 
-# 3. 源码构建（只复制必要文件）
+# 3. 源码构建
 COPY tsconfig*.json nest-cli.json ./
 COPY src ./src
 COPY public ./public
 RUN pnpm run build
 
-# 4. 清理开发依赖（禁用 husky 避免 postinstall 报错，保留 prisma 和 dotenv 用于迁移）
-RUN npm pkg delete scripts.postinstall && pnpm prune --prod && pnpm add prisma dotenv --save-prod
+# 4. 清理开发依赖，保留 prisma（迁移容器需要）
+RUN npm pkg delete scripts.postinstall && \
+    pnpm prune --prod && \
+    pnpm add prisma dotenv --save-prod
 
 # ============================================
 # 生产阶段
 # ============================================
-# 使用官方 Node 镜像
 FROM node:22-slim AS production
 
 WORKDIR /app
 
-# 安装运行时依赖 + 创建用户
+# 安装运行时依赖
+# - openssl: Prisma 需要
+# - curl: 健康检查
+# - dumb-init: 正确处理进程信号
+# - tsx: Prisma 7 需要解析 prisma.config.ts
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -51,6 +55,7 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
         curl \
         dumb-init && \
     rm -rf /var/lib/apt/lists/* && \
+    npm install -g tsx && \
     groupadd --gid 1001 nodejs && \
     useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nestjs
 
@@ -76,5 +81,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 
 ENTRYPOINT ["dumb-init", "--"]
 
-# 启动时自动执行数据库迁移
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+# 只启动应用，迁移由单独的容器执行
+
+CMD ["node", "dist/src/main.js"]
