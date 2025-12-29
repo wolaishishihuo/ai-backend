@@ -1,8 +1,8 @@
 # ============================================
 # 构建阶段
 # ============================================
-# 使用阿里云镜像源
-FROM registry.cn-hangzhou.aliyuncs.com/library/node:22.12-slim AS builder
+# 使用官方 Node 镜像
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -32,14 +32,14 @@ COPY src ./src
 COPY public ./public
 RUN pnpm run build
 
-# 4. 清理开发依赖（单独一层，便于调试）
-RUN pnpm prune --prod
+# 4. 清理开发依赖（禁用 husky 避免 postinstall 报错，保留 prisma 和 dotenv 用于迁移）
+RUN npm pkg delete scripts.postinstall && pnpm prune --prod && pnpm add prisma dotenv --save-prod
 
 # ============================================
 # 生产阶段
 # ============================================
-# 使用阿里云镜像源
-FROM registry.cn-hangzhou.aliyuncs.com/library/node:22.12-slim AS production
+# 使用官方 Node 镜像
+FROM node:22-slim AS production
 
 WORKDIR /app
 
@@ -58,6 +58,7 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma.config.ts ./
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/public ./public
 
@@ -75,5 +76,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 
 ENTRYPOINT ["dumb-init", "--"]
 
-# 使用 npx prisma（确保版本与项目一致）
+# 启动时自动执行数据库迁移
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
