@@ -1,7 +1,8 @@
 # ============================================
 # 构建阶段
 # ============================================
-FROM node:22.12-slim AS builder
+# 使用阿里云镜像源
+FROM registry.cn-hangzhou.aliyuncs.com/library/node:22.12-slim AS builder
 
 WORKDIR /app
 
@@ -37,7 +38,8 @@ RUN pnpm prune --prod
 # ============================================
 # 生产阶段
 # ============================================
-FROM node:22.12-slim AS production
+# 使用阿里云镜像源
+FROM registry.cn-hangzhou.aliyuncs.com/library/node:22.12-slim AS production
 
 WORKDIR /app
 
