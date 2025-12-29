@@ -86,9 +86,6 @@ importers:
       passport-local:
         specifier: ^1.0.0
         version: 1.0.0
-      prisma:
-        specifier: ^7.1.0
-        version: 7.2.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -183,6 +180,9 @@ importers:
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
+      prisma:
+        specifier: ^7.1.0
+        version: 7.2.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21

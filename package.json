@@ -59,7 +59,6 @@
     "node-schedule": "^2.1.1",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "prisma": "^7.1.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.2",
     "stacktrace-js": "^2.0.2",
@@ -68,6 +67,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "prisma": "^7.1.0",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-angular": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",

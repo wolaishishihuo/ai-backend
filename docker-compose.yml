@@ -5,6 +5,7 @@ services:
   # 后端 API 服务
   # ============================================
   backend:
+    image: ai-backend:latest
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -43,15 +44,12 @@ services:
       options:
         max-size: '10m'
         max-file: '3'
-    # 资源限制（可选，根据服务器配置调整）
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 2G
+          memory: 1G  # 改成 1G
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          memory: 256M  # 改成 256M
 
 networks:
   ai-network:

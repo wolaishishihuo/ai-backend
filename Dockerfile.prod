@@ -35,6 +35,8 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
     apt-get update && \
     apt-get install -y --no-install-recommends openssl curl dumb-init && \
     rm -rf /var/lib/apt/lists/* && \
+    # 全局安装 prisma CLI（用于 migrate deploy）
+    npm install -g prisma && \
     groupadd --gid 1001 nodejs && \
     useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nestjs
 
@@ -53,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # dumb-init 正确处理容器信号
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+CMD ["sh", "-c", "prisma migrate deploy && node dist/src/main.js"]
