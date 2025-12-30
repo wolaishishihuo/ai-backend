@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^1.0.32",
-    "bcrypt": "^6.0.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
@@ -49,6 +48,7 @@
     "@prisma/client": "^7.1.0",
     "ai": "^5.0.115",
     "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
@@ -57,6 +57,7 @@
     "ioredis": "^5.8.2",
     "nest-winston": "^1.10.2",
     "node-schedule": "^2.1.1",
+    "nodemailer": "^7.0.12",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.0",
@@ -67,7 +68,6 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "prisma": "^7.1.0",
     "@commitlint/cli": "^20.2.0",
     "@commitlint/config-angular": "^20.2.0",
     "@commitlint/config-conventional": "^20.2.0",
@@ -93,6 +93,7 @@
     "jest": "^30.2.0",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
+    "prisma": "^7.1.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.0",

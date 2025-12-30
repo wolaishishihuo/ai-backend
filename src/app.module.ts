@@ -10,6 +10,7 @@ import { HttpModule } from './common/http/http.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
     UserModule,
     ConversationModule,
     ChatModule,
-    StatisticsModule
+    StatisticsModule,
+    EmailModule
   ]
 })
 export class AppModule {}
