@@ -22,6 +22,11 @@ export class BaseUserDto {
   @IsEmail({}, { message: '邮箱格式不正确' })
   email: string;
 
+  @ApiProperty({ description: '验证码' })
+  @IsString()
+  @IsNotEmpty({ message: '验证码不能为空' })
+  captcha: string;
+
   // @ApiProperty({ description: '头像' })
   // @IsUrl({}, { message: '头像必须是有效的 URL' })
   // @IsOptional()

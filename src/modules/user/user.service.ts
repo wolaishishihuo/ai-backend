@@ -10,10 +10,14 @@ import {
   PaginatedResponseDto
 } from '@src/common/dto/pagination.dto';
 import * as bcrypt from 'bcrypt';
+import { RedisService } from '@src/datasources/redis/redis.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private redis: RedisService
+  ) {}
 
   async create(data: CreateUserDto): Promise<void> {
     // 检查邮箱是否已存在
@@ -22,6 +26,16 @@ export class UserService {
     });
     if (existingEmail) {
       throw new BadRequestException('该邮箱已被注册');
+    }
+
+    const captcha = await this.redis.get(`captcha:${data.email}`);
+
+    if (!captcha) {
+      throw new BadRequestException('验证码不存在');
+    }
+
+    if (captcha !== data.captcha) {
+      throw new BadRequestException('验证码错误');
     }
 
     try {

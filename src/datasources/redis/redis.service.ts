@@ -22,21 +22,33 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     const password = this.configService.get<string>('REDIS_PASSWORD');
     const sentinelsName = this.configService.get<string>('REDIS_SENTINELS');
+    const port = this.configService.get<number>('REDIS_PORT', 6379);
     const db = this.configService.get<number>('REDIS_DB', 0);
 
-    // 解析哨兵节点
-    const sentinels = host.split(',').map((item) => {
-      const [h, port] = item.split(':');
-      return { host: h, port: parseInt(port) || 26379 };
-    });
+    if (sentinelsName) {
+      // 哨兵模式：解析多个哨兵节点
+      const sentinels = host.split(',').map((item) => {
+        const [h, p] = item.split(':');
+        return { host: h, port: parseInt(p) || 26379 };
+      });
 
-    // 哨兵模式连接
-    this.client = new Redis({
-      sentinels,
-      name: sentinelsName,
-      password,
-      db
-    });
+      this.client = new Redis({
+        sentinels,
+        name: sentinelsName,
+        password,
+        db
+      });
+      this.logger.log('Redis connecting in Sentinel mode');
+    } else {
+      // 单机模式：直接连接
+      this.client = new Redis({
+        host,
+        port,
+        password,
+        db
+      });
+      this.logger.log('Redis connecting in Standalone mode');
+    }
   }
 
   async onModuleInit() {

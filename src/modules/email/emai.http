@@ -1,0 +1,24 @@
+### 发送验证码
+POST http://localhost:3000/api/email/send
+Content-Type: application/json
+
+{
+  "email": "2430250298@qq.com"
+}
+
+### 测试无效邮箱格式
+POST http://localhost:3000/api/email/send
+Content-Type: application/json
+
+{
+  "email": "invalid-email"
+}
+
+### 测试空邮箱
+POST http://localhost:3000/api/email/send
+Content-Type: application/json
+
+{
+  "email": ""
+}
+
