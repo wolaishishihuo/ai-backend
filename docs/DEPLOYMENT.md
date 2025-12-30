@@ -91,6 +91,70 @@ docker exec ai-backend env | grep DATABASE
 docker exec -it ai-backend npx prisma db push --dry-run
 ```
 
+## 数据库重置
+
+### 方案一：使用 Prisma Reset（推荐）
+
+**完全重置**：删除所有数据 + 重新运行迁移 + 运行 seed（会创建初始数据）
+
+```bash
+# 进入容器执行
+docker exec -it ai-backend npx prisma migrate reset
+
+# 或者直接执行（需要确认，输入 yes）
+docker exec -it ai-backend sh -c "echo 'yes' | npx prisma migrate reset"
+```
+
+**注意**：这会删除所有表数据，然后重新创建表结构并运行 seed（会创建 admin 用户）
+
+### 方案二：只清空数据（保留表结构）
+
+**清空所有表数据**，但保留表结构：
+
+```bash
+# 进入容器
+docker exec -it ai-backend sh
+
+# 执行清空命令
+npx prisma db execute --stdin <<EOF
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE usages;
+TRUNCATE TABLE messages;
+TRUNCATE TABLE conversations;
+TRUNCATE TABLE User;
+SET FOREIGN_KEY_CHECKS = 1;
+EOF
+```
+
+### 方案三：直接连接数据库
+
+```bash
+# 连接 MySQL（根据你的配置调整）
+mysql -u 用户名 -p 数据库名
+
+# 执行 SQL
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE usages;
+TRUNCATE TABLE messages;
+TRUNCATE TABLE conversations;
+TRUNCATE TABLE User;
+SET FOREIGN_KEY_CHECKS = 1;
+```
+
+### 方案四：删除并重建数据库
+
+```bash
+# 1. 删除数据库
+mysql -u 用户名 -p -e "DROP DATABASE IF EXISTS \`ai-web\`;"
+
+# 2. 重新创建数据库
+mysql -u 用户名 -p -e "CREATE DATABASE \`ai-web\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 3. 重新运行迁移（容器启动时会自动执行，或手动执行）
+docker exec -it ai-backend npx prisma migrate deploy
+docker exec -it ai-backend npx prisma db seed
+```
+
 ---
 
 ## 详细配置参考
