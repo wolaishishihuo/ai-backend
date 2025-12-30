@@ -52,10 +52,18 @@ services:
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
       # CORS 配置
       CORS_ORIGIN: ${CORS_ORIGIN}
-      # Redis 配置（可选，取消注释启用）
-      # REDIS_HOST: host.docker.internal
-      # REDIS_PORT: 6379
-      # REDIS_DB: 0
+      # 邮件服务配置
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-AI系统}
+      # Redis 配置（可选，不配置则禁用）
+      REDIS_HOST: ${REDIS_HOST:-}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_SENTINELS: ${REDIS_SENTINELS:-}
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     networks:
